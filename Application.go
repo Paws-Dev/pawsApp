@@ -7,26 +7,27 @@ import (
 )
 
 type ApplicationStarter interface {
-	InitializeComponents()
-	StartComponents() error
-	RegisterComponent(component Component, componentName string, dependencyNames []string)
+	InitializeDependencies()
+	StartApplication() error
+	RegisterDependency(component Dependency, name string, dependencyNames []string)
 }
 
-type Component interface {
-	Initialize(components map[string]Component)
+type Dependency interface {
+	Initialize(dependencies map[string]Dependency)
 	Start() error
+	FromComponent() interface{}
 }
 
 type Application struct {
-	Components         map[string]Component
+	Dependencies       map[string]Dependency
 	dependencyLists    [][]string
 	dependencySequence []string
 }
 
-func (a *Application) RegisterComponent(component Component, componentName string, dependencyNames []string) {
-	fmt.Printf("Registering component %s with dependencies %s\n", componentName, dependencyNames)
-	a.Components[componentName] = component
-	dependencyList := slices.Concat([]string{componentName}, dependencyNames)
+func (a *Application) RegisterDependency(dependency Dependency, name string, dependencyNames []string) {
+	fmt.Printf("Registering dependency %s with dependencies %s\n", name, dependencyNames)
+	a.Dependencies[name] = dependency
+	dependencyList := slices.Concat([]string{name}, dependencyNames)
 	a.dependencyLists = append(a.dependencyLists, dependencyList)
 }
 
@@ -51,8 +52,8 @@ func BuildInitializationSequence(dependencyLists *[][]string, dependencySequence
 
 		if len(*dependencySequence) <= length {
 			fmt.Println("Initialization sequence build failed")
-			fmt.Println("Initializable components: ", *dependencySequence)
-			fmt.Println("UnInitializable components: ", *dependencyLists)
+			fmt.Println("Initializable dependencies: ", *dependencySequence)
+			fmt.Println("UnInitializable dependencies: ", *dependencyLists)
 			panic("Initialization error, invalid initialization sequence")
 		}
 	}
@@ -60,17 +61,17 @@ func BuildInitializationSequence(dependencyLists *[][]string, dependencySequence
 
 }
 
-func (a *Application) InitializeComponents() {
+func (a *Application) InitializeDependencies() {
 	BuildInitializationSequence(&a.dependencyLists, &a.dependencySequence)
 	for _, name := range a.dependencySequence {
-		fmt.Printf("Initializing component %s\n", name)
-		a.Components[name].Initialize(a.Components)
+		fmt.Printf("Initializing dependency %s\n", name)
+		a.Dependencies[name].Initialize(a.Dependencies)
 	}
 }
 
-func (a *Application) StartComponents() error {
+func (a *Application) StartApplication() error {
 
-	for name, component := range a.Components {
+	for name, component := range a.Dependencies {
 		fmt.Printf("Starting component %s\n", name)
 		err := component.Start()
 		if err != nil {
@@ -82,7 +83,7 @@ func (a *Application) StartComponents() error {
 
 func NewApplication() *Application {
 	return &Application{
-		Components:         make(map[string]Component),
+		Dependencies:       make(map[string]Dependency),
 		dependencyLists:    [][]string{},
 		dependencySequence: []string{},
 	}
