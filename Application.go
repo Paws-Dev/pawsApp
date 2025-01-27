@@ -1,4 +1,4 @@
-package pawsStart
+package pawsStart1
 
 import (
 	"errors"
@@ -15,7 +15,14 @@ type ApplicationStarter interface {
 type Dependency interface {
 	Initialize(dependencies map[string]Dependency)
 	Start() error
-	FromComponent() interface{}
+}
+
+func FromDependency[T any](dependency Dependency) T {
+	component, ok := dependency.(T)
+	if !ok {
+		panic("Type conversion error during initialization")
+	}
+	return component
 }
 
 type Application struct {
