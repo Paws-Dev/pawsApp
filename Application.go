@@ -1,4 +1,4 @@
-package pawsInit
+package pawsStart
 
 import (
 	"errors"
@@ -31,21 +31,21 @@ func (a *Application) RegisterDependency(dependency Dependency, name string, dep
 	a.dependencyLists = append(a.dependencyLists, dependencyList)
 }
 
-func BuildInitializationSequence(dependencyLists *[][]string, dependencySequence *[]string) {
-	for len(*dependencyLists) != 0 {
+func BuildInitializationSequence(dependencyLists [][]string, dependencySequence *[]string) {
+	for len(dependencyLists) != 0 {
 		length := len(*dependencySequence)
-		for i, d := range *dependencyLists {
+		for i, d := range dependencyLists {
 			if len(d) == 1 {
 				*dependencySequence = append(*dependencySequence, d[0])
-				*dependencyLists = slices.Delete(*dependencyLists, i, i+1)
+				dependencyLists = slices.Delete(dependencyLists, i, i+1)
 			}
 
 		}
 
-		for i, d := range *dependencyLists {
+		for i, d := range dependencyLists {
 			for j, k := range d {
 				if j != 0 && slices.Contains(*dependencySequence, k) {
-					(*dependencyLists)[i] = slices.Delete((*dependencyLists)[i], j, j+1)
+					(dependencyLists)[i] = slices.Delete((dependencyLists)[i], j, j+1)
 				}
 			}
 		}
@@ -53,7 +53,7 @@ func BuildInitializationSequence(dependencyLists *[][]string, dependencySequence
 		if len(*dependencySequence) <= length {
 			fmt.Println("Initialization sequence build failed")
 			fmt.Println("Initializable dependencies: ", *dependencySequence)
-			fmt.Println("UnInitializable dependencies: ", *dependencyLists)
+			fmt.Println("UnInitializable dependencies: ", dependencyLists)
 			panic("Initialization error, invalid initialization sequence")
 		}
 	}
@@ -62,7 +62,7 @@ func BuildInitializationSequence(dependencyLists *[][]string, dependencySequence
 }
 
 func (a *Application) InitializeDependencies() {
-	BuildInitializationSequence(&a.dependencyLists, &a.dependencySequence)
+	BuildInitializationSequence(a.dependencyLists, &a.dependencySequence)
 	for _, name := range a.dependencySequence {
 		fmt.Printf("Initializing dependency %s\n", name)
 		a.Dependencies[name].Initialize(a.Dependencies)
