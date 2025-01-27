@@ -1,4 +1,4 @@
-package pawsStart1
+package pawsStart
 
 import (
 	"errors"
