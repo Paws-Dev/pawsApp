@@ -17,7 +17,7 @@ type Dependency interface {
 	Start() error
 }
 
-func FromDependency[T any](dependency Dependency) T {
+func As[T any](dependency Dependency) T {
 	component, ok := dependency.(T)
 	if !ok {
 		panic("Type conversion error during initialization")
