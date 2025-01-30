@@ -9,7 +9,7 @@ import (
 type ApplicationStarter interface {
 	InitializeDependencies()
 	StartApplication() error
-	RegisterDependency(component Dependency, name string, dependencyNames []string)
+	RegisterDependency(dependency Dependency, name string, dependencyNames []string)
 }
 
 type Dependency interface {
