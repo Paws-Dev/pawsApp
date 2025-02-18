@@ -7,13 +7,13 @@ import (
 )
 
 type ApplicationStarter interface {
-	InitializeDependencies()
+	InitDependencies()
 	StartApplication() error
 	RegisterDependency(dependency Dependency, name string, dependencyNames []string)
 }
 
 type Dependency interface {
-	Initialize(dependencies map[string]Dependency)
+	Init(dependencies map[string]Dependency)
 	Start() error
 }
 
@@ -38,7 +38,7 @@ func (a *Application) RegisterDependency(dependency Dependency, name string, dep
 	a.dependencyLists = append(a.dependencyLists, dependencyList)
 }
 
-func BuildInitializationSequence(dependencyLists [][]string, dependencySequence *[]string) {
+func BuildInitSequence(dependencyLists [][]string, dependencySequence *[]string) {
 	for len(dependencyLists) != 0 {
 		length := len(*dependencySequence)
 		for i, d := range dependencyLists {
@@ -68,11 +68,11 @@ func BuildInitializationSequence(dependencyLists [][]string, dependencySequence 
 
 }
 
-func (a *Application) InitializeDependencies() {
-	BuildInitializationSequence(a.dependencyLists, &a.dependencySequence)
+func (a *Application) InitDependencies() {
+	BuildInitSequence(a.dependencyLists, &a.dependencySequence)
 	for _, name := range a.dependencySequence {
 		fmt.Printf("Initializing dependency %s\n", name)
-		a.Dependencies[name].Initialize(a.Dependencies)
+		a.Dependencies[name].Init(a.Dependencies)
 	}
 }
 
