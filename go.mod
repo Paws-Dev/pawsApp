@@ -1,3 +1,3 @@
-module github.com/Paws-Dev/pawsStart
+module github.com/Paws-Dev/pawsApp
 
 go 1.24
