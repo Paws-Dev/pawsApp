@@ -1,4 +1,4 @@
-package pawsApp
+package app
 
 import (
 	"errors"
