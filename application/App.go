@@ -46,32 +46,30 @@ func (a *App) RegisterDep(dep Dependency, name string, depNames []string) {
 
 func BuildInitSeq(depLists [][]string, depSeq *[]string) {
 	for len(depLists) != 0 {
-		length := len(*depSeq)
+		removed := 0
 		for i, d := range depLists {
 			if len(d) == 1 {
 				*depSeq = append(*depSeq, d[0])
 				depLists = slices.Delete(depLists, i, i+1)
+				removed++
 			}
-
 		}
-
 		for i, d := range depLists {
 			for j, k := range d {
 				if j != 0 && slices.Contains(*depSeq, k) {
 					(depLists)[i] = slices.Delete((depLists)[i], j, j+1)
+					removed++
 				}
 			}
 		}
-
-		if len(*depSeq) <= length {
+		if removed == 0 {
 			fmt.Println("Initialization sequence build failed")
-			fmt.Println("Initializable dependencies: ", depSeq)
+			fmt.Println("Initializable dependencies: ", *depSeq)
 			fmt.Println("UnInitializable dependencies: ", depLists)
 			panic("Initialization error, invalid initialization sequence")
 		}
 	}
 	fmt.Println("Dependency initialization sequence build ok:", depSeq)
-
 }
 
 func (a *App) InitDeps() {
