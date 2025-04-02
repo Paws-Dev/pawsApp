@@ -1,47 +1,60 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"slices"
 )
 
-type AppStarter interface {
-	InitDeps()
-	StartApp() error
-	RegisterDep(dep Dependency, name string, depNames []string)
-}
-
-type Dependency interface {
-	Init(deps map[string]Dependency)
-	Start() error
-}
-
-func As[T any](dep Dependency) T {
-	component, ok := dep.(T)
-	if !ok {
-		argumentType := reflect.TypeOf(dep)
-		var t T
-		targetType := reflect.TypeOf(t)
-
-		panic(fmt.Sprintf("Type conversion error during init: cannot convert from %v to %v",
-			argumentType, targetType))
-	}
-	return component
-}
-
-type App struct {
-	Deps     map[string]Dependency
+type Starter struct {
+	dep      map[string]any
+	init     map[string]func(name string, dep map[string]any) (func(any) error, error)
+	start    map[string]func(any) error
 	depLists [][]string
 	depSeq   []string
 }
 
-func (a *App) RegisterDep(dep Dependency, name string, depNames []string) {
-	fmt.Printf("Registering dep %s with dependencies %s\n", name, depNames)
-	a.Deps[name] = dep
-	depList := slices.Concat([]string{name}, depNames)
-	a.depLists = append(a.depLists, depList)
+func NewStarter() *Starter {
+	return &Starter{
+		dep:      make(map[string]any),
+		init:     make(map[string]func(name string, dep map[string]any) (func(any) error, error)),
+		start:    make(map[string]func(any) error),
+		depLists: [][]string{},
+		depSeq:   []string{},
+	}
+}
+
+func (s *Starter) Register(name string, init func(name string, dep map[string]any) (func(any) error, error), dependencies ...string) {
+	fmt.Printf("Registering dep %s with dependencies %s\n", name, dependencies)
+	s.init[name] = init
+	if len(dependencies) != 0 {
+		depList := slices.Concat([]string{name}, dependencies)
+		s.depLists = append(s.depLists, depList)
+	} else {
+		s.depLists = append(s.depLists, []string{name})
+	}
+
+}
+
+func (s *Starter) Start() {
+	BuildInitSeq(s.depLists, &s.depSeq)
+	for _, name := range s.depSeq {
+		fmt.Printf("Initializing dependency %s\n", name)
+		start, err := s.init[name](name, s.dep)
+		if err != nil {
+			panic(err)
+		}
+		if start != nil {
+			s.start[name] = start
+		}
+	}
+	for name, start := range s.start {
+		fmt.Printf("Starting dependency %s\n", name)
+		err := start(s.dep[name])
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func BuildInitSeq(depLists [][]string, depSeq *[]string) {
@@ -69,32 +82,17 @@ func BuildInitSeq(depLists [][]string, depSeq *[]string) {
 			panic("Initialization error, invalid initialization sequence")
 		}
 	}
-	fmt.Println("Dependency initialization sequence build ok:", depSeq)
+	fmt.Println("Dependency initialization sequence build ok:", *depSeq)
 }
 
-func (a *App) InitDeps() {
-	BuildInitSeq(a.depLists, &a.depSeq)
-	for _, name := range a.depSeq {
-		fmt.Printf("Initializing dependency %s\n", name)
-		a.Deps[name].Init(a.Deps)
+func As[T any](dep any) T {
+	component, ok := dep.(T)
+	if !ok {
+		argumentType := reflect.TypeOf(dep)
+		var t T
+		targetType := reflect.TypeOf(t)
+		panic(fmt.Sprintf("Type conversion error during init: cannot convert from %v to %v",
+			argumentType, targetType))
 	}
-}
-
-func (a *App) StartApp() error {
-	for name, component := range a.Deps {
-		fmt.Printf("Starting component %s\n", name)
-		err := component.Start()
-		if err != nil {
-			return errors.New("Component " + name + " failed to start: " + err.Error())
-		}
-	}
-	return nil
-}
-
-func NewApp() *App {
-	return &App{
-		Deps:     make(map[string]Dependency),
-		depLists: [][]string{},
-		depSeq:   []string{},
-	}
+	return component
 }
