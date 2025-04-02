@@ -42,6 +42,7 @@ func (s *Starter) Start() {
 		fmt.Printf("Initializing dependency %s\n", name)
 		start, err := s.init[name](name, s.dep)
 		if err != nil {
+			fmt.Printf("Error nitializing dependency %s\n", name)
 			panic(err)
 		}
 		if start != nil {
@@ -52,6 +53,7 @@ func (s *Starter) Start() {
 		fmt.Printf("Starting dependency %s\n", name)
 		err := start(s.dep[name])
 		if err != nil {
+			fmt.Printf("Error starting dependency %s\n", name)
 			panic(err)
 		}
 	}
