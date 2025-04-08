@@ -6,7 +6,7 @@ import (
 	"slices"
 )
 
-type Starter struct {
+type Application struct {
 	dep      map[string]any
 	init     map[string]func(name string, dep map[string]any) (func(any) error, error)
 	start    map[string]func(any) error
@@ -14,8 +14,8 @@ type Starter struct {
 	depSeq   []string
 }
 
-func NewStarter() *Starter {
-	return &Starter{
+func New() *Application {
+	return &Application{
 		dep:      make(map[string]any),
 		init:     make(map[string]func(name string, dep map[string]any) (func(any) error, error)),
 		start:    make(map[string]func(any) error),
@@ -24,7 +24,7 @@ func NewStarter() *Starter {
 	}
 }
 
-func (s *Starter) Register(name string, init func(name string, dep map[string]any) (func(any) error, error), dependencies ...string) {
+func (s *Application) Dependency(name string, init func(name string, dep map[string]any) (func(any) error, error), dependencies ...string) {
 	fmt.Printf("Registering dep %s with dependencies %s\n", name, dependencies)
 	s.init[name] = init
 	if len(dependencies) != 0 {
@@ -36,7 +36,7 @@ func (s *Starter) Register(name string, init func(name string, dep map[string]an
 
 }
 
-func (s *Starter) Start() {
+func (s *Application) Start() {
 	BuildInitSeq(s.depLists, &s.depSeq)
 	for _, name := range s.depSeq {
 		fmt.Printf("Initializing dependency %s\n", name)
