@@ -24,7 +24,7 @@ func New() *Application {
 	}
 }
 
-func (s *Application) Dependency(name string, init func(name string, dep map[string]any) (func(any) error, error), dependencies ...string) {
+func (s *Application) InitComponent(name string, init func(name string, dep map[string]any) (func(any) error, error), dependencies ...string) {
 	fmt.Printf("Registering dep %s with dependencies %s\n", name, dependencies)
 	s.init[name] = init
 	if len(dependencies) != 0 {
@@ -78,10 +78,10 @@ func BuildInitSeq(depLists [][]string, depSeq *[]string) {
 			}
 		}
 		if removed == 0 {
-			fmt.Println("Initialization sequence build failed")
-			fmt.Println("Initializable dependencies: ", *depSeq)
-			fmt.Println("UnInitializable dependencies: ", depLists)
-			panic("Initialization error, invalid initialization sequence")
+			fmt.Println("Init sequence build failed")
+			fmt.Println("Initable components: ", *depSeq)
+			fmt.Println("UnInitable components: ", depLists)
+			panic("Components initialization error, initialization sequence contains cycles or unresolvable dependencies")
 		}
 	}
 	fmt.Println("Dependency initialization sequence build ok:", *depSeq)
