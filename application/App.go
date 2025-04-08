@@ -7,25 +7,33 @@ import (
 )
 
 type Application struct {
-	dep      map[string]any
-	init     map[string]func(name string, dep map[string]any) (func(any) error, error)
+	*Dependencies
+	init     map[string]func(name string, dep *Dependencies) (func(any) error, error)
 	start    map[string]func(any) error
 	depLists [][]string
 	depSeq   []string
 }
 
+type Dependencies struct {
+	List   map[string]any
+	Config *Configuration
+}
+
 func New() *Application {
 	return &Application{
-		dep:      make(map[string]any),
-		init:     make(map[string]func(name string, dep map[string]any) (func(any) error, error)),
+		Dependencies: &Dependencies{
+			List:   make(map[string]any),
+			Config: NewConfiguration(),
+		},
+		init:     make(map[string]func(name string, dep *Dependencies) (func(any) error, error)),
 		start:    make(map[string]func(any) error),
 		depLists: [][]string{},
 		depSeq:   []string{},
 	}
 }
 
-func (s *Application) InitComponent(name string, init func(name string, dep map[string]any) (func(any) error, error), dependencies ...string) {
-	fmt.Printf("Registering dep %s with dependencies %s\n", name, dependencies)
+func (s *Application) InitComponent(name string, init func(name string, dep *Dependencies) (func(any) error, error), dependencies ...string) {
+	fmt.Printf("Registering depndency %s with dependencies %s\n", name, dependencies)
 	s.init[name] = init
 	if len(dependencies) != 0 {
 		depList := slices.Concat([]string{name}, dependencies)
@@ -39,10 +47,10 @@ func (s *Application) InitComponent(name string, init func(name string, dep map[
 func (s *Application) Start() {
 	BuildInitSeq(s.depLists, &s.depSeq)
 	for _, name := range s.depSeq {
-		fmt.Printf("Initializing dependency %s\n", name)
-		start, err := s.init[name](name, s.dep)
+		fmt.Printf("Initializing depndency %s\n", name)
+		start, err := s.init[name](name, s.Dependencies)
 		if err != nil {
-			fmt.Printf("Error nitializing dependency %s\n", name)
+			fmt.Printf("Error nitializing depndency %s\n", name)
 			panic(err)
 		}
 		if start != nil {
@@ -50,10 +58,10 @@ func (s *Application) Start() {
 		}
 	}
 	for name, start := range s.start {
-		fmt.Printf("Starting dependency %s\n", name)
-		err := start(s.dep[name])
+		fmt.Printf("Starting component %s\n", name)
+		err := start(s.List[name])
 		if err != nil {
-			fmt.Printf("Error starting dependency %s\n", name)
+			fmt.Printf("Error starting component %s\n", name)
 			panic(err)
 		}
 	}
@@ -79,9 +87,9 @@ func BuildInitSeq(depLists [][]string, depSeq *[]string) {
 		}
 		if removed == 0 {
 			fmt.Println("Init sequence build failed")
-			fmt.Println("Initable components: ", *depSeq)
-			fmt.Println("UnInitable components: ", depLists)
-			panic("Components initialization error, initialization sequence contains cycles or unresolvable dependencies")
+			fmt.Println("Initable dependencies: ", *depSeq)
+			fmt.Println("UnInitable dependencies: ", depLists)
+			panic("Dependencies initialization error, initialization sequence contains cycles or unresolvable dependencies")
 		}
 	}
 	fmt.Println("Dependency initialization sequence build ok:", *depSeq)
