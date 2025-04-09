@@ -15,15 +15,15 @@ type Application struct {
 }
 
 type Dependencies struct {
-	List   map[string]any
-	Config *Configuration
+	List map[string]any
+	Cfg  *Configuration
 }
 
 func New() *Application {
 	return &Application{
 		Dependencies: &Dependencies{
-			List:   make(map[string]any),
-			Config: NewConfiguration(),
+			List: make(map[string]any),
+			Cfg:  NewConfiguration(),
 		},
 		init:     make(map[string]func(name string, dep *Dependencies) (func(any) error, error)),
 		start:    make(map[string]func(any) error),
