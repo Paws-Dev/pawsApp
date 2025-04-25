@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 type Configuration struct {
@@ -43,7 +44,7 @@ func (c *Configuration) GetStr(env string) string {
 	return val
 }
 
-func (c *Configuration) GetInt(env string) int64 {
+func (c *Configuration) GetInt(env string) int {
 	fmt.Printf("GetConfigInt: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetInt(env))
@@ -51,7 +52,33 @@ func (c *Configuration) GetInt(env string) int64 {
 	if err != nil {
 		panic(err)
 	}
+	val := c.configReader.GetInt(env)
+	fmt.Printf("=%v\n", val)
+	return val
+}
+
+func (c *Configuration) GetInt64(env string) int64 {
+	fmt.Printf("GetConfigInt64: %v", env)
+	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
+	c.configReader.SetDefault(env, c.configReader.GetInt64(env))
+	err := c.configReader.BindEnv(env, envVar)
+	if err != nil {
+		panic(err)
+	}
 	val := c.configReader.GetInt64(env)
+	fmt.Printf("=%v\n", val)
+	return val
+}
+
+func (c *Configuration) GetDuration(env string) time.Duration {
+	fmt.Printf("GetConfigDuration: %v", env)
+	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
+	c.configReader.SetDefault(env, c.configReader.GetDuration(env))
+	err := c.configReader.BindEnv(env, envVar)
+	if err != nil {
+		panic(err)
+	}
+	val := c.configReader.GetDuration(env)
 	fmt.Printf("=%v\n", val)
 	return val
 }

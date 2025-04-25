@@ -32,7 +32,7 @@ func New() *Application {
 	}
 }
 
-func (s *Application) InitComponent(name string, init func(name string, dep *Dependencies) (func(any) error, error), dependencies ...string) {
+func (s *Application) Init(name string, init func(name string, dep *Dependencies) (func(any) error, error), dependencies ...string) {
 	fmt.Printf("Registering depndency %s with dependencies %s\n", name, dependencies)
 	s.init[name] = init
 	if len(dependencies) != 0 {
