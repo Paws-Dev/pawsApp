@@ -70,6 +70,19 @@ func (c *Configuration) GetInt64(env string) int64 {
 	return val
 }
 
+func (c *Configuration) GetInt16(env string) int16 {
+	fmt.Printf("GetConfigInt64: %v", env)
+	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
+	c.configReader.SetDefault(env, c.configReader.GetInt(env))
+	err := c.configReader.BindEnv(env, envVar)
+	if err != nil {
+		panic(err)
+	}
+	val := c.configReader.GetInt(env)
+	fmt.Printf("=%v\n", val)
+	return int16(val)
+}
+
 func (c *Configuration) GetDuration(env string) time.Duration {
 	fmt.Printf("GetConfigDuration: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
