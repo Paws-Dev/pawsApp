@@ -83,6 +83,32 @@ func (c *Configuration) GetInt16(env string) int16 {
 	return int16(val)
 }
 
+func (c *Configuration) GetIntSlice(env string) []int {
+	fmt.Printf("GetConfigInt64: %v", env)
+	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
+	c.configReader.SetDefault(env, c.configReader.GetIntSlice(env))
+	err := c.configReader.BindEnv(env, envVar)
+	if err != nil {
+		panic(err)
+	}
+	val := c.configReader.GetIntSlice(env)
+	fmt.Printf("=%v\n", val)
+	return val
+}
+
+func (c *Configuration) GetStringSlice(env string) []string {
+	fmt.Printf("GetConfigInt64: %v", env)
+	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
+	c.configReader.SetDefault(env, c.configReader.GetStringSlice(env))
+	err := c.configReader.BindEnv(env, envVar)
+	if err != nil {
+		panic(err)
+	}
+	val := c.configReader.GetStringSlice(env)
+	fmt.Printf("=%v\n", val)
+	return val
+}
+
 func (c *Configuration) GetDuration(env string) time.Duration {
 	fmt.Printf("GetConfigDuration: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
