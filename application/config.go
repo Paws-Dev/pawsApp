@@ -71,7 +71,7 @@ func (c *Configuration) GetInt64(env string) int64 {
 }
 
 func (c *Configuration) GetInt16(env string) int16 {
-	fmt.Printf("GetConfigInt64: %v", env)
+	fmt.Printf("GetConfigInt16: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetInt(env))
 	err := c.configReader.BindEnv(env, envVar)
@@ -84,7 +84,7 @@ func (c *Configuration) GetInt16(env string) int16 {
 }
 
 func (c *Configuration) GetIntSlice(env string) []int {
-	fmt.Printf("GetConfigInt64: %v", env)
+	fmt.Printf("GetConfigIntSlice: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetIntSlice(env))
 	err := c.configReader.BindEnv(env, envVar)
@@ -97,7 +97,7 @@ func (c *Configuration) GetIntSlice(env string) []int {
 }
 
 func (c *Configuration) GetStringSlice(env string) []string {
-	fmt.Printf("GetConfigInt64: %v", env)
+	fmt.Printf("GetConfigStringSlice: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetStringSlice(env))
 	err := c.configReader.BindEnv(env, envVar)
