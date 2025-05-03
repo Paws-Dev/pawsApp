@@ -8,8 +8,8 @@ import (
 
 type Application struct {
 	*Dependencies
-	init     map[string]func(name string, dep *Dependencies) (func(any) error, error)
-	start    map[string]func(any) error
+	init     map[string]func(name string, dep *Dependencies) (func(...any) error, error)
+	start    map[string]func(...any) error
 	depLists [][]string
 	depSeq   []string
 }
@@ -25,14 +25,14 @@ func New() *Application {
 			List: make(map[string]any),
 			Cfg:  NewConfiguration(),
 		},
-		init:     make(map[string]func(name string, dep *Dependencies) (func(any) error, error)),
-		start:    make(map[string]func(any) error),
+		init:     make(map[string]func(name string, dep *Dependencies) (func(...any) error, error)),
+		start:    make(map[string]func(...any) error),
 		depLists: [][]string{},
 		depSeq:   []string{},
 	}
 }
 
-func (s *Application) Init(name string, init func(name string, dep *Dependencies) (func(any) error, error), dependencies ...string) {
+func (s *Application) Init(name string, init func(name string, dep *Dependencies) (func(...any) error, error), dependencies ...string) {
 	fmt.Printf("Registering depndency %s with dependencies %s\n", name, dependencies)
 	s.init[name] = init
 	if len(dependencies) != 0 {
