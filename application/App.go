@@ -51,6 +51,8 @@ func (a *Application) Dependency(dep func() *Dependency) {
 }
 
 func (a *Application) Start() {
+	var names []string
+	var deps []string
 	for _, dep := range a.deps {
 		dependency := dep()
 		fmt.Printf("Registering depndency %s with dependencies %s\n", dependency.name, dependency.deps)
@@ -63,6 +65,13 @@ func (a *Application) Start() {
 		a.init[dependency.name] = dependency.init
 		if dependency.start != nil {
 			a.start[dependency.name] = dependency.start
+		}
+		names = append(names, dependency.name)
+		deps = append(deps, dependency.deps...)
+	}
+	for _, dep := range deps {
+		if !slices.Contains(names, dep) {
+			panic(fmt.Sprintf("Dependency %s not found", dep))
 		}
 	}
 	BuildInitSeq(a.depLists, &a.depSeq)
