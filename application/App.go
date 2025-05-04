@@ -67,7 +67,7 @@ func (a *Application) Start() {
 	}
 	BuildInitSeq(a.depLists, &a.depSeq)
 	for _, name := range a.depSeq {
-		fmt.Printf("Initializing depndency name %s\n, ", name)
+		fmt.Printf("Initializing depndency %s\n", name)
 		dep, err := a.init[name](a.Cfg, a.List)
 		if err != nil {
 			fmt.Printf("Error nitializing depndency %s\n", name)
