@@ -12,7 +12,7 @@ type Config struct {
 	configReader *viper.Viper
 }
 
-func NewConfiguration() *Config {
+func NewConfig() *Config {
 	return &Config{
 		configReader: viper.GetViper(),
 	}

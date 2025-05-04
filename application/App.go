@@ -38,7 +38,7 @@ func New() *Application {
 	return &Application{
 		deps:     make([]func() *Dependency, 0),
 		List:     make(map[string]any),
-		Cfg:      NewConfiguration(),
+		Cfg:      NewConfig(),
 		init:     make(map[string]func(cfg *Config, list map[string]any) (any, error)),
 		start:    make(map[string]func(cfg *Config, dep any) error),
 		depLists: [][]string{},
