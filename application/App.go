@@ -9,9 +9,9 @@ import (
 type Application struct {
 	deps     []func() *Dependency
 	List     map[string]any
-	Cfg      *Configuration
-	init     map[string]func(cfg *Configuration, list map[string]any) (any, error)
-	start    map[string]func(cfg *Configuration, dep any) error
+	Cfg      *Config
+	init     map[string]func(cfg *Config, list map[string]any) (any, error)
+	start    map[string]func(cfg *Config, dep any) error
 	depLists [][]string
 	depSeq   []string
 }
@@ -19,13 +19,13 @@ type Application struct {
 type Dependency struct {
 	name  string
 	deps  []string
-	init  func(cfg *Configuration, list map[string]any) (any, error)
-	start func(cfg *Configuration, dep any) error
+	init  func(cfg *Config, list map[string]any) (any, error)
+	start func(cfg *Config, dep any) error
 }
 
 func NewDependency(name string, deps []string,
-	init func(cfg *Configuration, list map[string]any) (any, error),
-	start func(cfg *Configuration, dep any) error) *Dependency {
+	init func(cfg *Config, list map[string]any) (any, error),
+	start func(cfg *Config, dep any) error) *Dependency {
 	return &Dependency{
 		name:  name,
 		deps:  deps,
@@ -39,8 +39,8 @@ func New() *Application {
 		deps:     make([]func() *Dependency, 0),
 		List:     make(map[string]any),
 		Cfg:      NewConfiguration(),
-		init:     make(map[string]func(cfg *Configuration, list map[string]any) (any, error)),
-		start:    make(map[string]func(cfg *Configuration, dep any) error),
+		init:     make(map[string]func(cfg *Config, list map[string]any) (any, error)),
+		start:    make(map[string]func(cfg *Config, dep any) error),
 		depLists: [][]string{},
 		depSeq:   []string{},
 	}

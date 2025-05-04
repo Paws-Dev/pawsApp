@@ -8,17 +8,17 @@ import (
 	"time"
 )
 
-type Configuration struct {
+type Config struct {
 	configReader *viper.Viper
 }
 
-func NewConfiguration() *Configuration {
-	return &Configuration{
+func NewConfiguration() *Config {
+	return &Config{
 		configReader: viper.GetViper(),
 	}
 }
 
-func (c *Configuration) ConfigPath(path string) {
+func (c *Config) ConfigPath(path string) {
 	dir, file := filepath.Split(path)
 	filename := strings.TrimSuffix(file, filepath.Ext(file))
 	c.configReader.SetConfigName(filename)
@@ -31,7 +31,7 @@ func (c *Configuration) ConfigPath(path string) {
 	}
 }
 
-func (c *Configuration) GetStr(env string) string {
+func (c *Config) GetStr(env string) string {
 	fmt.Printf("GetConfigStr: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetString(env))
@@ -44,7 +44,7 @@ func (c *Configuration) GetStr(env string) string {
 	return val
 }
 
-func (c *Configuration) GetInt(env string) int {
+func (c *Config) GetInt(env string) int {
 	fmt.Printf("GetConfigInt: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetInt(env))
@@ -57,7 +57,7 @@ func (c *Configuration) GetInt(env string) int {
 	return val
 }
 
-func (c *Configuration) GetInt64(env string) int64 {
+func (c *Config) GetInt64(env string) int64 {
 	fmt.Printf("GetConfigInt64: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetInt64(env))
@@ -70,7 +70,7 @@ func (c *Configuration) GetInt64(env string) int64 {
 	return val
 }
 
-func (c *Configuration) GetInt16(env string) int16 {
+func (c *Config) GetInt16(env string) int16 {
 	fmt.Printf("GetConfigInt16: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetInt(env))
@@ -83,7 +83,7 @@ func (c *Configuration) GetInt16(env string) int16 {
 	return int16(val)
 }
 
-func (c *Configuration) GetIntSlice(env string) []int {
+func (c *Config) GetIntSlice(env string) []int {
 	fmt.Printf("GetConfigIntSlice: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetIntSlice(env))
@@ -96,7 +96,7 @@ func (c *Configuration) GetIntSlice(env string) []int {
 	return val
 }
 
-func (c *Configuration) GetStringSlice(env string) []string {
+func (c *Config) GetStringSlice(env string) []string {
 	fmt.Printf("GetConfigStringSlice: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetStringSlice(env))
@@ -109,7 +109,7 @@ func (c *Configuration) GetStringSlice(env string) []string {
 	return val
 }
 
-func (c *Configuration) GetDuration(env string) time.Duration {
+func (c *Config) GetDuration(env string) time.Duration {
 	fmt.Printf("GetConfigDuration: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetDuration(env))
@@ -122,7 +122,7 @@ func (c *Configuration) GetDuration(env string) time.Duration {
 	return val
 }
 
-func (c *Configuration) GetBool(env string) bool {
+func (c *Config) GetBool(env string) bool {
 	fmt.Printf("GetConfigBool: %v", env)
 	envVar := strings.ToUpper(strings.ReplaceAll(env, ".", "_"))
 	c.configReader.SetDefault(env, c.configReader.GetBool(env))
