@@ -46,7 +46,7 @@ func New() *Application {
 	}
 }
 
-func (a *Application) Register(dep func() *Dependency) {
+func (a *Application) Dependency(dep func() *Dependency) {
 	a.deps = append(a.deps, dep)
 }
 
