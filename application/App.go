@@ -61,7 +61,9 @@ func (a *Application) Start() {
 			a.depLists = append(a.depLists, []string{dependency.name})
 		}
 		a.init[dependency.name] = dependency.init
-		a.start[dependency.name] = dependency.start
+		if dependency.start != nil {
+			a.start[dependency.name] = dependency.start
+		}
 	}
 	BuildInitSeq(a.depLists, &a.depSeq)
 	for _, name := range a.depSeq {
