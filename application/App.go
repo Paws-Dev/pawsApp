@@ -7,59 +7,75 @@ import (
 )
 
 type Application struct {
-	*Dependencies
-	init     map[string]func(name string, dep *Dependencies) (func(...any) error, error)
-	start    map[string]func(...any) error
+	deps     []func() *Dependency
+	List     map[string]any
+	Cfg      *Configuration
+	init     map[string]func(cfg *Configuration, list map[string]any) (any, error)
+	start    map[string]func(cfg *Configuration, dep any) error
 	depLists [][]string
 	depSeq   []string
 }
 
-type Dependencies struct {
-	List map[string]any
-	Cfg  *Configuration
+type Dependency struct {
+	name  string
+	deps  []string
+	init  func(cfg *Configuration, list map[string]any) (any, error)
+	start func(cfg *Configuration, dep any) error
+}
+
+func NewDependency(name string, deps []string,
+	init func(cfg *Configuration, list map[string]any) (any, error),
+	start func(cfg *Configuration, dep any) error) *Dependency {
+	return &Dependency{
+		name:  name,
+		deps:  deps,
+		init:  init,
+		start: start,
+	}
 }
 
 func New() *Application {
 	return &Application{
-		Dependencies: &Dependencies{
-			List: make(map[string]any),
-			Cfg:  NewConfiguration(),
-		},
-		init:     make(map[string]func(name string, dep *Dependencies) (func(...any) error, error)),
-		start:    make(map[string]func(...any) error),
+		deps:     make([]func() *Dependency, 0),
+		List:     make(map[string]any),
+		Cfg:      NewConfiguration(),
+		init:     make(map[string]func(cfg *Configuration, list map[string]any) (any, error)),
+		start:    make(map[string]func(cfg *Configuration, dep any) error),
 		depLists: [][]string{},
 		depSeq:   []string{},
 	}
 }
 
-func (s *Application) Init(name string, init func(name string, dep *Dependencies) (func(...any) error, error), dependencies ...string) {
-	fmt.Printf("Registering depndency %s with dependencies %s\n", name, dependencies)
-	s.init[name] = init
-	if len(dependencies) != 0 {
-		depList := slices.Concat([]string{name}, dependencies)
-		s.depLists = append(s.depLists, depList)
-	} else {
-		s.depLists = append(s.depLists, []string{name})
-	}
-
+func (a *Application) Register(dep func() *Dependency) {
+	a.deps = append(a.deps, dep)
 }
 
-func (s *Application) Start() {
-	BuildInitSeq(s.depLists, &s.depSeq)
-	for _, name := range s.depSeq {
-		fmt.Printf("Initializing depndency %s\n", name)
-		start, err := s.init[name](name, s.Dependencies)
+func (a *Application) Start() {
+	for _, dep := range a.deps {
+		dependency := dep()
+		fmt.Printf("Registering depndency %s with dependencies %s\n", dependency.name, dependency.deps)
+		if len(dependency.deps) != 0 {
+			depList := slices.Concat([]string{dependency.name}, dependency.deps)
+			a.depLists = append(a.depLists, depList)
+		} else {
+			a.depLists = append(a.depLists, []string{dependency.name})
+		}
+		a.init[dependency.name] = dependency.init
+		a.start[dependency.name] = dependency.start
+	}
+	BuildInitSeq(a.depLists, &a.depSeq)
+	for _, name := range a.depSeq {
+		fmt.Printf("Initializing depndency name %s\n, ", name)
+		dep, err := a.init[name](a.Cfg, a.List)
 		if err != nil {
 			fmt.Printf("Error nitializing depndency %s\n", name)
 			panic(err)
 		}
-		if start != nil {
-			s.start[name] = start
-		}
+		a.List[name] = dep
 	}
-	for name, start := range s.start {
+	for name, start := range a.start {
 		fmt.Printf("Starting component %s\n", name)
-		err := start(s.List[name])
+		err := start(a.Cfg, a.List[name])
 		if err != nil {
 			fmt.Printf("Error starting component %s\n", name)
 			panic(err)
