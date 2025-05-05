@@ -8,9 +8,9 @@ import (
 
 type Application struct {
 	deps     []func() *Dependency
-	List     map[string]any
+	List     map[string][]any
 	Cfg      *Config
-	init     map[string]func(cfg *Config, list map[string]any) (any, error)
+	init     map[string]func(cfg *Config, list []any) (any, error)
 	start    map[string]func(cfg *Config, dep any) error
 	depLists [][]string
 	depSeq   []string
@@ -19,12 +19,12 @@ type Application struct {
 type Dependency struct {
 	name  string
 	deps  []string
-	init  func(cfg *Config, list map[string]any) (any, error)
+	init  func(cfg *Config, list []any) (any, error)
 	start func(cfg *Config, dep any) error
 }
 
 func NewDependency(name string, deps []string,
-	init func(cfg *Config, list map[string]any) (any, error),
+	init func(cfg *Config, list []any) (any, error),
 	start func(cfg *Config, dep any) error) *Dependency {
 	return &Dependency{
 		name:  name,
@@ -37,9 +37,9 @@ func NewDependency(name string, deps []string,
 func New() *Application {
 	return &Application{
 		deps:     make([]func() *Dependency, 0),
-		List:     make(map[string]any),
+		List:     make(map[string][]any),
 		Cfg:      NewConfig(),
-		init:     make(map[string]func(cfg *Config, list map[string]any) (any, error)),
+		init:     make(map[string]func(cfg *Config, list []any) (any, error)),
 		start:    make(map[string]func(cfg *Config, dep any) error),
 		depLists: [][]string{},
 		depSeq:   []string{},
@@ -68,6 +68,7 @@ func (a *Application) Start() {
 		}
 		names = append(names, dependency.name)
 		deps = append(deps, dependency.deps...)
+		a.List[dependency.name] = []any{nil, dependency.deps}
 	}
 	for _, dep := range deps {
 		if !slices.Contains(names, dep) {
@@ -77,16 +78,21 @@ func (a *Application) Start() {
 	BuildInitSeq(a.depLists, &a.depSeq)
 	for _, name := range a.depSeq {
 		fmt.Printf("Initializing depndency %s\n", name)
-		dep, err := a.init[name](a.Cfg, a.List)
+		depList := a.List[name][1].([]string)
+		var list []any
+		for _, dName := range depList {
+			list = append(list, a.List[dName][0])
+		}
+		dep, err := a.init[name](a.Cfg, list)
 		if err != nil {
 			fmt.Printf("Error nitializing depndency %s\n", name)
 			panic(err)
 		}
-		a.List[name] = dep
+		a.List[name][0] = dep
 	}
 	for name, start := range a.start {
 		fmt.Printf("Starting component %s\n", name)
-		err := start(a.Cfg, a.List[name])
+		err := start(a.Cfg, a.List[name][0])
 		if err != nil {
 			fmt.Printf("Error starting component %s\n", name)
 			panic(err)
